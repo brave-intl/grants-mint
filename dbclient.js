@@ -2,11 +2,9 @@ const { Pool } = require('pg')
 module.exports = async (argv) => {
   const options = {
     connectionString: argv.databaseurl,
-    ssl: true,
+    ssl: false,
   }
-  console.log(options)
   const pool = new Pool(options)
-  const client = await pool.connect()
-  console.log('connected')
-  return client
+  pool.on('error', (error) => console.log(error))
+  return pool
 }

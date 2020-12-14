@@ -7,21 +7,26 @@ module.exports = async function create(argv) {
   const options = {
     hostname,
     protocol,
-    path: '/v1/promotions',
+    path: `/v1/promotions`,
     method: 'POST',
     headers: {
       Authorization: 'Bearer ' + auth
     },
     body: {
       type,
-      numGrants: type === 'ugp' ? count : (walletIds.length * count),
+      numGrants: type === 'ugp' ? count : walletIds.length,
       value,
       platform,
       active: true,
     }
   }
-  const result = await request(options)
-  return result
+  if (type === 'ugp') {
+    return request(options).then((res) => ([res]))
+  } else {
+    return Promise.all(Array(count).fill().map(() => {
+      return request(options)
+    }))
+  }
 }
 
 async function request (options) {
