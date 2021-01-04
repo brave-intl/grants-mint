@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 const { argv } = require('yargs')
-  .options(require('../config'))
+  .options(require('./config'))
 const fs = require('fs')
-const mod = require('..')
+const mod = require('../..')
 
 const environments = {
   'grant.rewards.bravesoftware.com': 'staging',
@@ -29,7 +29,7 @@ async function main() {
   const client = await mod.dbclient(argv)
   console.log('creating promotions')
   const files = await mod.create(argv)
-  fs.writeFileSync('./results.json', JSON.stringify(files))
+  fs.writeFileSync('./claims.json', JSON.stringify(files))
   const id = setTimeout(() => {}, 10000)
   try {
     console.log('creating claims')
