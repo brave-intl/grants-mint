@@ -36,7 +36,7 @@ It seems that sudo may be required to execute these commands.
 
 Create a series of ugp grants for ios filled with 30 bat. To create more than 1 ugp grant to claim for a single wallet, the command must be run multiple times.
 ```bash
-sudo creategrants
+sudo mintclaims
   --type=ugp \
   --platform=ios \
   --value=30 \
@@ -46,7 +46,7 @@ Possible platforms include `ios`, `android`, and `desktop`
 
 Create a set of ads grants for 3 specific wallets (1 claim for each). Wallet IDs are space delineated
 ```bash
-sudo creategrants \
+sudo mintclaims \
   --walletIds=b500b47c-c9bb-4c21-adde-970149c20906 \
     86ce92a0-822c-443d-a68e-faabc76258ec \
     d5402d2b-e6b4-4e75-b95a-28396a1f29a5 \
@@ -58,7 +58,7 @@ sudo creategrants \
 
 For each wallet ID, create 3 ads grants
 ```bash
-sudo creategrants \
+sudo mintclaims \
   --walletIds=1de21066-f54c-4f36-91ec-5009fad8801e \
     e540f2c0-20de-4213-939e-91a2cfb7b61a \
   --type=ads \

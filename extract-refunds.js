@@ -31,7 +31,7 @@ async function extractRefunds ({ csv, csvCorrected }, client) {
   if (moreErrors.length) {
     throw moreErrors
   }
-  return Promise.all(data.map((datum) => {
+  return Promise.all(data.map(async (datum) => {
     if (!datum.PaymentID.slice(0, 2) === '0x') {
       // backfill using client
       const getByPublicKey = 'select id from wallets where public_key = $1'
