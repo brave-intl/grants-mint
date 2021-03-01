@@ -3,7 +3,8 @@ const https = require('https')
 
 module.exports = async function create(argv) {
   const { auth, count, hostname, protocol, value, type, platform, walletIds } = argv
-  let total = []
+  const shards = 4
+  const limit = value * shards === parseInt(value * shards) ? value : ((parseInt(value * shards) + 1) / shards)
   const options = {
     hostname,
     protocol,
@@ -15,7 +16,7 @@ module.exports = async function create(argv) {
     body: {
       type,
       numGrants: type === 'ugp' ? count : walletIds.length,
-      value,
+      value: limit,
       platform,
       active: true,
     }
