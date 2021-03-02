@@ -19,7 +19,8 @@ module.exports = {
 // }
 
 async function generateFiles({ id: _settlementId }) {
-  const csv = `publisher_id,email,deposit_id,channel_identifier,total,amount,fees`
+  const csv = `publisher_id,email,deposit_id,channel_identifier,total,amount,fees
+`
   const settlementId = _settlementId || uuid.v4()
   const now = new Date()
   const result = Papa.parse(csv, { header: true })
