@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 const { argv } = require('yargs')
   .options(require('./config'))
-const fs = require('fs')
+const utils = require('../utils')
 const mod = require('../..')
 
 const environments = {
@@ -26,14 +26,14 @@ on the ${environments[hostname]} environment`)
 async function main() {
   log(argv)
   console.log('connecting to db')
-  const client = await mod.dbclient(argv)
   console.log('creating promotions')
   const files = await mod.create(argv)
-  fs.writeFileSync('./claims.json', JSON.stringify(files))
+  utils.saveFile('claims.json', JSON.stringify(files))
   const id = setTimeout(() => {}, 10000)
+  const client = await mod.dbclient(argv)
   try {
     console.log('creating claims')
-    const res = await mod.setupClaims(argv, files, client)
+    await mod.setupClaims(argv, files, client)
     if (argv.legacy) {
       await mod.setupLegacyClaims(argv, files, client)
     }

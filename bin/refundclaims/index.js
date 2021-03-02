@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 const { argv } = require('yargs')
   .options(require('./config'))
-const fs = require('fs')
+const utils = require('../utils')
 const mod = require('../..')
 
 main().catch(console.error)
@@ -12,7 +12,7 @@ async function main() {
   const client = await mod.dbclient(argv)
   console.log('extracting csv')
   const files = await mod.extractRefunds(argv, client)
-  fs.writeFileSync('./refunds.json', JSON.stringify(files))
+  utils.saveFile('./refunds.json', JSON.stringify(files))
   prompt.start()
   const { confirmed } = await prompt.get({
     confirmed: {
