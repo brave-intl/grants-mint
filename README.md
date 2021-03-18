@@ -1,6 +1,6 @@
-# Brave Mint
+# Support Tools
 
-mint promotions and grants
+general tooling to help support get things done
 
 ## setup
 
@@ -32,7 +32,16 @@ If the values match what you put into your `.env` file, then run some of the exa
 
 It seems that sudo may be required to execute these commands.
 
-## examples
+if you previously downloaded using the `mint-claims` repo please run the following commands to sync with the new repo
+
+```
+git remote -v
+git remote remove origin
+git remote add origin git@github.com:brave-intl/support-tools.git
+git branch --set-upstream-to=origin/master master
+```
+
+## Mint Claims examples
 
 Create a series of ugp grants for ios filled with 30 bat. To create more than 1 ugp grant to claim for a single wallet, the command must be run multiple times.
 ```bash
