@@ -5,6 +5,7 @@ const dbclient = require('./dbclient')
 const extractRefunds = require('./extract-refunds')
 const createRefundClaims = require('./create-refund-claims')
 const settlement = require('./settlement')
+const linkingLimit = require('./linking-limit')
 
 module.exports = {
   create,
@@ -13,5 +14,6 @@ module.exports = {
   dbclient,
   extractRefunds,
   settlement,
-  createRefundClaims
+  createRefundClaims,
+  linkingLimit
 }
