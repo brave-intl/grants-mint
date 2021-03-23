@@ -11,13 +11,17 @@ async function getInfo (argv) {
     hostname: parsed.hostname,
     port: parsed.port,
     protocol: parsed.protocol,
-    path: `/v3/wallet/${argv.custodian}/linking-info`,
+    path: `/v3/wallet/linking-info`,
     method: 'GET',
-    headers: { Authorization: `Bearer ${argv.auth}` },
-    body: {
+    headers: argv.auth ? { Authorization: `Bearer ${argv.auth}` } : null,
+    body: argv.wallet ? {
       paymentId: argv.wallet
+    } : {
+      custodianId: argv['member-id']
     }
-  }).then(console.log)
+  }).then((res) => {
+    console.log(JSON.stringify(res, null, 2))
+  })
 }
 
 async function incrementLimit () {}

@@ -50,7 +50,7 @@ async function request (options) {
             failure(new Error(`request failed`), statusCode, null, body)
           } else {
             const json = JSON.parse(body)
-            resolve([json])
+            resolve(json)
           }
         } catch (e) {
           failure(e, statusCode, null, body)

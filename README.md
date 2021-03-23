@@ -97,3 +97,18 @@ creating promotions
 creating claims
 finished
 ```
+
+## Wallet linking info
+
+check the wallet linking info on your environment's wallets with a couple of quick commands
+
+if you have their brave wallet id, accessable at `brave://rewards-internals`
+```bash
+walletlinks --wallet 15823452-6a03-46f0-80e4-c7c3d21d87c7
+```
+
+if you have the member id (not stored on brave's servers) from a transaction for another reason
+
+```bash
+walletlinks --member-id ca762426-4c6f-46f7-a487-728a66803015
+```
