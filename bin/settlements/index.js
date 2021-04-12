@@ -1,24 +1,23 @@
 #!/usr/bin/env node
 const { argv } = require('yargs')
+  .parserConfiguration({
+    "camel-case-expansion": true,
+  })
   .options(require('./config'))
 const utils = require('../utils')
-const { settlement } = require('../..')
+const mod = require('../..')
+const { settlements } = require('../..')
 
 main().catch(console.error)
 
 async function main() {
-  // const creatorsClient = await mod.dbclient(argv)
-  // const eyeshadeClient = await mod.dbclient(argv)
+  const creatorsClient = await mod.dbclient(argv)
   try {
-    // const creatorSettlementData = await settlement.gatherCreator(argv, creatorsClient)
-    // const settlementData = await settlement.gatherEyeshade(argv, eyeshadeClient, creatorSettlementData)
-    const settlementData = await settlement.generateFiles(argv)
-    // console.log('settlement data', settlementData)
-    utils.saveFile('creator-settlement.json', JSON.stringify(settlementData, null, 2))
+    const collected = await settlements.collect(argv, creatorsClient)
+    utils.saveFile('creator-settlement.json', collected)
   } catch (e) {
     console.log('failed to gather creator settlement info', e)
   } finally {
-    // creatorsClient.end()
-    // eyeshadeClient.end()
+    creatorsClient.end()
   }
 }

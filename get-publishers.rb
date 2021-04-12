@@ -4,16 +4,15 @@ require 'bigdecimal'
 require 'date'
 
 ActiveRecord::Base.logger.level = 1
-emails = [
-  # "ena.banno+c7@bitflyer.com",
-  "donghoe.kim+creator16@bitflyer.com"
+ids = [
+  "adeb74d5-3028-4095-8f7f-fd01c3b7dc18",
+  "726d13d6-7366-4131-88c6-6095381d9ab8"
 ]
 
 settlement_id = SecureRandom.uuid
 now = Time.now
 id_namespace = '7111abf4-0cd1-4e70-88a6-ebc03d5fc68b'
-result = Publisher.where(:email => emails).inject([]) do |memo, publisher|
-  puts memo
+result = Publisher.where(:id => ids).inject([]) do |memo, publisher|
   balances = PublisherBalanceGetter.new(publisher: publisher).perform
   channelResults = publisher.channels.inject([]) do |memo2, channel|
     channel_identifier = channel.details.channel_identifier
@@ -25,27 +24,37 @@ result = Publisher.where(:email => emails).inject([]) do |memo, publisher|
     bat = (BigDecimal(bal) - fee).truncate(18).to_s
     fees = fee.truncate(18).to_s
     result = []
-    if bat.to_i != 0
-      result = [{
-        bat: bat,
-        fees: fees,
-        owner: "publishers#uuid:" + publisher.id,
-        owner_state: "active",
-        channel_type: channel_identifier.include?('twitter') ? "TwitterChannelDetails" : (channel_identifier.include?('youtube') ? "YoutubeChannelDetails" : ("SiteChannelDetails")),
-        id: Digest::UUID.uuid_v5(id_namespace, publisher.id + ":" + channel.deposit_id + ":" + channel_identifier),
-        email: publisher.email,
-        created_at: now.to_datetime,
-        inserted_at: now.to_datetime,
-        address: channel.deposit_id,
-        publisher: channel_identifier,
-        url: channel_identifier,
-        type: "contribution",
-        payout_report_id: settlement_id,
-        wallet_country_code: "JP",
-        wallet_provider: "3",
-        wallet_provider_id: "bitflyer#id:" + channel.deposit_id
-      }]
+    deposit_id = ""
+    if channel.deposit_id.present?
+      deposit_id = channel.deposit_id
     end
+    tx_type = "contribution"
+    if balance["account_id"].include?("publishers#uuid:")
+      tx_type = "referral"
+    end
+    puts balance["account_id"] + " has " + bat.to_s + " BAT"
+    if bat.to_i == 0
+      return memo
+    end
+    result = [{
+      bat: bat,
+      fees: fees,
+      owner: "publishers#uuid:" + publisher.id,
+      owner_state: "active",
+      channel_type: channel_identifier.include?('twitter') ? "TwitterChannelDetails" : (channel_identifier.include?('youtube') ? "YoutubeChannelDetails" : ("SiteChannelDetails")),
+      id: Digest::UUID.uuid_v5(id_namespace, publisher.id + ":" + deposit_id + ":" + channel_identifier),
+      email: publisher.email,
+      created_at: now.to_datetime,
+      inserted_at: now.to_datetime,
+      address: channel.deposit_id,
+      publisher: channel_identifier,
+      url: channel_identifier,
+      type: tx_type,
+      payout_report_id: settlement_id,
+      wallet_country_code: "JP",
+      wallet_provider: "3",
+      wallet_provider_id: "bitflyer#id:" + deposit_id
+    }]
     memo2 = memo2.concat(result)
   end
   memo = memo.concat(channelResults)

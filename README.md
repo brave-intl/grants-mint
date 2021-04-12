@@ -112,3 +112,28 @@ if you have the member id (not stored on brave's servers) from a transaction for
 ```bash
 walletlinks --member-id ca762426-4c6f-46f7-a487-728a66803015
 ```
+
+## Settlement
+
+create objects to upload as settlements to eyeshade. files will be generated to results/creator-settlement.json
+
+```bash
+settlements --channels brave.com
+```
+
+if you have publisher ids
+```bash
+settlements --publisher-ids 3cdd2edc-b613-48a9-b3bb-d6e087344687 \
+  f1e15b41-ab2d-4ba3-b7a4-88aadc59a2af
+```
+
+or emails
+```bash
+settlements --emails mmclaughlin+user@brave.com
+```
+
+only get the balances for each id and publisher
+```bash
+settlements --steps creators \
+  --publisher-ids 3cdd2edc-b613-48a9-b3bb-d6e087344687 f1e15b41-ab2d-4ba3-b7a4-88aadc59a2af
+```

@@ -10,6 +10,9 @@ module.exports = {
 }
 
 function saveFile(name, data) {
+  if (_.isObject(data)) {
+    data = JSON.stringify(data, null, 2)
+  }
   const prefix = '../results'
   const filepath = path.join(__dirname, prefix, name)
   fs.mkdirSync(path.join(__dirname, prefix), { recursive: true })

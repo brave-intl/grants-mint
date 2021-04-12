@@ -4,8 +4,9 @@ const setupLegacyClaims = require('./setup-legacy-claims')
 const dbclient = require('./dbclient')
 const extractRefunds = require('./extract-refunds')
 const createRefundClaims = require('./create-refund-claims')
-const settlement = require('./settlement')
+const settlements = require('./settlements')
 const linkingLimit = require('./linking-limit')
+const reverseReferrals = require('./reverse-referrals')
 
 module.exports = {
   create,
@@ -13,7 +14,8 @@ module.exports = {
   setupLegacyClaims,
   dbclient,
   extractRefunds,
-  settlement,
+  settlements,
   createRefundClaims,
+  reverseReferrals,
   linkingLimit
 }
