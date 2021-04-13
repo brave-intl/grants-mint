@@ -24,7 +24,7 @@ CASE
      WHEN channels.details_type = 'VimeoChannelDetails'
           THEN CONCAT('vimeo#channel:', vimeo_channel_details.vimeo_channel_id)
      WHEN channels.details_type = 'TwitchChannelDetails'
-          THEN CONCAT('twitch#channel:', twitch_channel_details.twitch_channel_id)
+          THEN CONCAT('twitch#author:', twitch_channel_details.twitch_channel_id)
      WHEN channels.details_type = 'TwitterChannelDetails'
           THEN CONCAT('twitter#channel:', twitter_channel_details.twitter_channel_id)
      ELSE site_channel_details.brave_publisher_id
