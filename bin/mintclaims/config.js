@@ -3,17 +3,17 @@ dotenv.config()
 
 module.exports = {
   auth: {
-    default: process.env.AUTH,
+    default: process.env.GRANT_AUTH,
     describe: 'the auth key for grants',
     demandOption: true
   },
   hostname: {
     describe: 'the hostname to send the create promotion requests to',
-    default: process.env.HOSTNAME
+    default: process.env.GRANT_HOSTNAME
   },
   databaseurl: {
     describe: 'the url of the database to update manually',
-    default: process.env.DATABASE_URL
+    default: process.env.GRANT_DATABASE_URL
   },
   protocol: {
     default: 'https:',

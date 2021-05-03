@@ -3,17 +3,49 @@ const _ = require('lodash')
 const { request } = require('./bin/utils')
 const uuid = require('uuid')
 module.exports = {
-  collect
+  collect: walkThroughSteps
 }
+
+const stepOrder = [
+  'publishers',
+  'antifraud',
+  // 'grants',
+]
+
+const steps = {
+  publishers: collectPublishersData,
+  antifraud: completeAntifradTransforms,
+  // grants: completeGrantsTransforms
+  // eyeshade uploading is last possible step
+}
+
 const currencyDecimals = {
   BAT: 18,
   JPY: 2,
   USD: 2
 }
 
-const identifierQuery = `select
-CONCAT('publishers#uuid:', channels.publisher_id) as publisher_id,
-publishers.default_currency as currency,
+const identifierQuery = `SELECT
+CONCAT('publishers#uuid:', channels.publisher_id) AS publisher_id,
+CASE
+     WHEN publishers.selected_wallet_provider_type = 'BitflyerConnection'
+          THEN CONCAT('bitflyer#id:', channels.deposit_id)
+     WHEN publishers.selected_wallet_provider_type = 'GeminiConnection'
+          THEN CONCAT('gemini#id:', channels.deposit_id)
+     WHEN publishers.selected_wallet_provider_type = 'UpholdConnection'
+          THEN CONCAT('uphold#id:', channels.deposit_id)
+     ELSE 'default'
+END AS wallet_provider_id,
+CASE
+     WHEN publishers.selected_wallet_provider_type = 'BitflyerConnection'
+          THEN 'bitflyer'
+     WHEN publishers.selected_wallet_provider_type = 'GeminiConnection'
+          THEN 'gemini'
+     WHEN publishers.selected_wallet_provider_type = 'UpholdConnection'
+          THEN 'uphold'
+END AS provider,
+publishers.email as email,
+channels.details_type as channel_type,
 CASE
      WHEN channels.details_type = 'RedditChannelDetails'
           THEN CONCAT('reddit#channel:', reddit_channel_details.reddit_channel_id)
@@ -28,26 +60,32 @@ CASE
      WHEN channels.details_type = 'TwitterChannelDetails'
           THEN CONCAT('twitter#channel:', twitter_channel_details.twitter_channel_id)
      ELSE site_channel_details.brave_publisher_id
-END as channel_id
-from channels
-full join site_channel_details
-on channels.details_id = site_channel_details.id
-full join reddit_channel_details
-on channels.details_id = reddit_channel_details.id
-full join twitter_channel_details
-on channels.details_id = twitter_channel_details.id
-full join github_channel_details
-on channels.details_id = github_channel_details.id
-full join vimeo_channel_details
-on channels.details_id = vimeo_channel_details.id
-full join youtube_channel_details
-on channels.details_id = youtube_channel_details.id
-full join twitch_channel_details
-on channels.details_id = twitch_channel_details.id
-full join publishers
-on channels.publisher_id = publishers.id
-where channels.publisher_id = any($1::uuid[])
-order by publisher_id desc`
+END AS channel_id
+FROM publishers
+FULL JOIN channels
+ON channels.publisher_id = publishers.id
+FULL JOIN site_channel_details
+ON channels.details_id = site_channel_details.id
+FULL JOIN reddit_channel_details
+ON channels.details_id = reddit_channel_details.id
+FULL JOIN twitter_channel_details
+ON channels.details_id = twitter_channel_details.id
+FULL JOIN github_channel_details
+ON channels.details_id = github_channel_details.id
+FULL JOIN vimeo_channel_details
+ON channels.details_id = vimeo_channel_details.id
+FULL JOIN youtube_channel_details
+ON channels.details_id = youtube_channel_details.id
+FULL JOIN twitch_channel_details
+ON channels.details_id = twitch_channel_details.id
+FULL JOIN bitflyer_connections
+ON bitflyer_connections.publisher_id = publishers.id
+  AND bitflyer_connections.is_verified
+FULL JOIN gemini_connections
+ON gemini_connections.publisher_id = publishers.id
+  AND gemini_connections.is_verified
+WHERE publishers.id = ANY($1::UUID[])
+ORDER BY publisher_id DESC`
 
 async function getIdentifiers(argv, pool) {
   const client = await pool.connect()
@@ -63,6 +101,67 @@ async function getIdentifiers(argv, pool) {
   } finally {
     await client.release()
   }
+}
+
+async function walkThroughSteps(argv, pool) {
+  const identifiers = await getIdentifiers(argv, pool)
+  let memo = identifiers
+  for (let i = 0; i < stepOrder.length; i += 1) {
+    console.log('running step', stepOrder[i])
+    memo = await steps[stepOrder[i]](argv, pool, memo)
+    if (argv.step === stepOrder[i]) {
+      break
+    }
+  }
+  return memo
+}
+
+function collectPublishersData(argv, pool, identifiers) {
+  return collectBalances(argv, identifiers)
+}
+
+function completeAntifradTransforms(argv, pool, identifiers) {
+  const settlementId = uuid.v4()
+  const now = new Date().toISOString()
+  return identifiers.balances.map((balance) => {
+    const isPubId = balance.account_id === identifiers.channelToId[balance.account_id]
+    const amount = balance.balance
+    let bat = amount
+    let fees = '0'
+    if (!isPubId) {// is contribution
+      bat = new BigNumber(bat).times(0.95).toFixed(18)
+      fees = new BigNumber(amount).minus(bat)
+    }
+    const id = identifiers.channelToIdentifiers[balance.account_id]
+    const {
+      publisher_id,
+      deposit_id,
+      channel_id,
+      channel_type,
+      provider,
+      wallet_provider_id,
+      email
+    } = id
+    console.log(id)
+    return {
+      bat,
+      fees,
+      owner: `publishers#uuid:${identifiers.channelToId[balance.account_id]}`,
+      owner_state: 'active',
+      channel_type,
+      id: uuid.v5(`${publisher_id}:${deposit_id}:${channel_id}`, '7111abf4-0cd1-4e70-88a6-ebc03d5fc68b'),
+      email,
+      created_at: now,
+      inserted_at: now,
+      address: deposit_id,
+      url: channel_id,
+      type: isPubId ? 'referral' : 'contribution',
+      payout_report_id: settlementId,
+      wallet_country_code: '',
+      wallet_provider: '',
+      wallet_provider_id
+    }
+  })
 }
 
 async function collect(argv, pool) {
@@ -83,6 +182,8 @@ async function collectBalances(argv, identifiers) {
   const accountList = [] // [][]publisher_id,channel_id...
   const currencies = {}
   const idToCurrency = {}
+  const channelToId = {}
+  const channelToIdentifiers = {}
   for (let i = 0; i < identifiers.length; i += 1) {
     let {
       publisher_id: publisherId,
@@ -94,24 +195,30 @@ async function collectBalances(argv, identifiers) {
       accountList.push([publisherId])
       idToCurrency[publisherId] = currency
     }
+    channelToIdentifiers[channelId] = identifiers[i]
+    channelToIdentifiers[publisherId] = identifiers[i]
     currencies[currency] = true
     idToCurrency[channelId] = currency
     accountList[accountList.length - 1].push(channelId)
+    channelToId[publisherId] = publisherId
+    channelToId[channelId] = publisherId
   }
   const rates = await getRates(argv, _.keys(currencies))
-  let bals = []
+  let balances = []
   // for loop for serial exec
   for (let i = 0; i < accountList.length; i += 1) {
-    bals = bals.concat(
-      await getBalances(argv, accountList[i], rates, identifiers)
+    balances = balances.concat(
+      await getBalances(argv, accountList[i])
     )
   }
   return {
-    balances: bals,
+    balances,
     identifiers,
+    channelToIdentifiers,
     accountList,
     currencies,
     rates,
+    channelToId,
     idToCurrency
   }
 }
@@ -140,6 +247,7 @@ function getRates(argv, currencies) {
 function createSettlementObjects(argv, {
   balances,
   idToCurrency,
+  channelToId,
   rates: {
     lastUpdated: now,
     payload: rates
@@ -163,7 +271,7 @@ function createSettlementObjects(argv, {
       payout = bal.times('0.95')
       fees = bal.minus(payout)
     }
-    const owner = balances[0].id
+    const owner = channelToId[id]
     const currency = idToCurrency[id]
     const rate = rates[currency]
     const amount = new BigNumber(rate).times(payout)
@@ -224,19 +332,19 @@ async function getPublisherIds(argv, client) {
 
 function getPublisherIdQuery(argv) {
   let channelInfoQuery = `
-select
-  publisher_id as id
-from channels
-where details_id = any(
-  select id
-  from site_channel_details
-  where
-      brave_publisher_id = any($1::text[])
+SELECT
+  publisher_id AS id
+FROM channels
+WHERE details_id = ANY(
+  SELECT id
+  FROM site_channel_details
+  WHERE
+      brave_publisher_id = ANY($1::text[])
 )`
   const getPublishersByEmail = `
-select id
-from publishers
-where email = any($1::text[])`
+SELECT id
+FROM publishers
+WHERE email = ANY($1::text[])`
   if (argv.emails.length) {
     return {
       query: getPublishersByEmail,

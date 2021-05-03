@@ -49,8 +49,8 @@ module.exports = {
     type: 'string',
     describe: 'the protocol ratios is being communicated over'
   },
-  steps: {
-    default: ['creators', 'payout'],
+  step: {
+    default: 'grants',
     type: 'array',
     describe: 'the steps to form the desired object'
   },

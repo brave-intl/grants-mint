@@ -8,6 +8,6 @@ module.exports = async (argv) => {
   }
   const client = new Pool(options)
   client.on('error', (error) => console.log(error))
-  client.on('connect', () => console.log('connected', argv.databaseurl))
+  // client.on('connect', () => console.log('connected', argv.databaseurl))
   return client
 }
