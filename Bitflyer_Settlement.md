@@ -4,17 +4,19 @@ If you need to pay out individual creators, you can follow along with this docum
 
 The steps we're going to follow:
 
-- Use emails of the creators to generate a tipping settlement file
-- Create a tipping payout
-  - `bat-go` to generate a signed settlement file
-  - `bat-go` to take that signed file and submit a payout to BitFlyer
-- Create an adrewards payout
-  - Modify the settlement file we got from `support-tools` (the ads payout data comes from Antifraud, not creators/eyeshade)
-  - `bat-go` to generate a signed settlement file
-  - `bat-go` to take that signed file and submit a payout to BitFlyer
-- Inform eyeshade of all of the completed payouts with BitFlyer
+##### Table of Contents
 
-## Generate a tipping settlement
+- [Generate tipping settlement](#generate-tipping-settlement)
+- [Create tipping payout](#create-tipping-payout)
+  - [Generate a signed settlement file](#generate-tipping-signed-settlement-file)
+  - [Tipping Payout](#tipping-payout)
+- [Create adrewards payout](#create-adrewards-payout)
+  - [Modify settlement file](#modify-settlement-file)
+  - [Generate a signed settlement file](#generate-ads-signed-settlement-file)
+  - [Ads Payout](#ads-payout)
+- [Inform eyeshade](#inform-eyeshade)
+
+## Generate tipping settlement
 
 In order to generate a tipping settlement, you'll want to run [this ruby script](getcre) in the staging console. Make sure to fill in the emails for the creators you need to pay out. Then copy/paste.
 
@@ -22,13 +24,13 @@ This script should generate a settlement file that you can feed right into `bat-
 
 [getcre]: https://github.com/brave-intl/support-tools/blob/master/get-publishers.rb#L7
 
-## Create a tipping payout
+## Create tipping payout
 
 We'll be using `bat-go` for this section, make sure that you have good values in the `.env` and `config.yaml` files. Get them from a teammate.
 
 Note that tipping vs adrewards payout data is only specified for Bitflyer. No other provider gets this differentiation.
 
-### Generate a signed settlement file
+### Generate tipping signed settlement file
 
 Take the file generated in the previous step and create a signed settlement file:
 
@@ -40,7 +42,7 @@ This should generate a new file `bitflyer-default-creator-settlement-signed.json
 
 This file can be used to submit a payout to BitFlyer.
 
-### Payout BitFlyer
+### Tipping Payout
 
 To perform the payout, you run:
 
@@ -104,7 +106,7 @@ For reference, `bitflyer-settlement-complete.json` should look something like:
     validUntil: "0001-01-01T00:00:00Z",
     note: "",
   },
-]
+];
 ```
 
 A `bitflyer-settlement-not-submitted.json` file might look like:
@@ -133,12 +135,14 @@ A `bitflyer-settlement-not-submitted.json` file might look like:
     validUntil: "0001-01-01T00:00:00Z",
     note: "MONTHLY_SEND_LIMIT: not-submitted",
   },
-]
+];
 ```
 
 The error message will be in the note.
 
-## Create an adrewards payout
+## Create adrewards payout
+
+### Modify settlement file
 
 This section is much like the one above, we just have to modify the `bitflyer-default-creator-settlement-signed.json` file to contain manual ad payout data, or manually create one.
 
@@ -148,12 +152,16 @@ We'll also need the `deposit_id` for each of the Wallet Payment IDs. To get that
 SELECT * FROM wallets where id = any('{wallet1,wallet2}');
 ```
 
+### Generate ads signed settlement file
+
 You'll want the `user_deposit_destination` field. You can then modify the signed file with the deposit_id -- it should go in the address field. You'll also want to modify these fields with the relevant information:
 
 - `amount` -- how much BAT you want to send
 - `probi` -- Should match the amount field for BAT, just the int version
 - `transactionId` -- need a fresh UUID for this for all the elements being submitted in this settlement
 - `owner` -- For which creator is this?
+
+### Ads Payout
 
 To perform the payout, you run:
 
