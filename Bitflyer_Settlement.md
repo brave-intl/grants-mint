@@ -26,7 +26,56 @@ This script should generate a settlement file that you can feed right into `bat-
 
 ## Create tipping payout
 
-We'll be using `bat-go` for this section, make sure that you have good values in the `.env` and `config.yaml` files. Get them from a teammate.
+We'll be using `bat-go` for this section, make sure that you have good values in the `.env` and `config.yaml` files. Get them from a teammate, they might look something like this:
+
+```shell
+DATABASE_MIGRATIONS_URL=file://$(pwd)/migrations
+DATABASE_URL=postgres://grants:password@localhost:3401/grants?sslmode=disable
+RO_DATABASE_URL=postgres://grants:password@localhost:3401/grants?sslmode=disable
+UPHOLD_ACCESS_TOKEN=1234
+BAT_SETTLEMENT_ADDRESS=1234
+DONOR_WALLET_CARD_ID=1234
+DONOR_WALLET_PUBLIC_KEY=1234
+DONOR_WALLET_PRIVATE_KEY=1234
+GRANT_WALLET_CARD_ID=1234
+GRANT_WALLET_PUBLIC_KEY=1234
+GRANT_WALLET_PRIVATE_KEY=1234
+ED25519_PUBLIC_KEY=1234
+ED25519_PRIVATE_KEY=1234
+VAULT_ADDR=http://127.0.0.1:8200
+TOKEN_LIST=1234
+ENV=local
+RATIOS_TOKEN=1234
+RATIOS_ACCESS_TOKEN=1234
+RATIOS_SERVICE=https://1234.basicattentiontoken.org
+RATIOS_SERVER=https://1234.basicattentiontoken.org
+NGROK_TOKEN=1234
+SLACK_ACCESS_TOKEN=1234
+SLACK_SERVER=https://slack.com
+FEATURE_ORDERS=true
+ENCRYPTION_KEY=1234
+GEMINI_SERVER=https://api.1234.net
+GEMINI_CLIENT_ID=1234
+GEMINI_TEST_DESTINATION_ID=1234
+GEMINI_CLIENT_KEY=1234
+GEMINI_CLIENT_SECRET=1234
+GEMINI_SUBMIT_TYPE=1234
+GEMINI_CLIENT_KEY=1234
+GEMINI_CLIENT_SECRET=1234
+TEST_TAGS=integration
+BITFLYER_SOURCE_FROM=tipping
+BITFLYER_DRYRUN=false
+BITFLYER_CLIENT_ID=1234
+BITFLYER_CLIENT_SECRET=1234
+BITFLYER_EXTRA_CLIENT_SECRET=1234
+BITFLYER_SERVER=https://d1234.net
+BITFLYER_TOKEN=1234
+KAFKA_SSL_CERTIFICATE_LOCATION=$(pwd)/1234.pem
+KAFKA_SSL_KEY_LOCATION=$(pwd)/1234.key
+CHALLENGE_BYPASS_SERVER=http://c1234:2416
+EYESHADE_DB_URL=postgres://eyeshade:password@localhost:3402/eyeshade?sslmode=disable
+DATABASE_MIGRATIONS_URL=file://$(pwd)/eyeshade/migrations
+```
 
 Note that tipping vs adrewards payout data is only specified for Bitflyer. No other provider gets this differentiation.
 
