@@ -143,4 +143,4 @@ settlements --steps creators \
 
 ### Bitflyer settlements
 
-See [Bitflyer Settlements](<Bitflyer_Settlements.md>)
+See [Bitflyer Settlement](<Bitflyer_Settlement.md>)
