@@ -1,4 +1,4 @@
-# Payouts for Creators and Ads
+# Bitflyer Payouts for Creators and Ads
 
 If you need to pay out individual creators, you can follow along with this document to get a general idea on how to do that.
 
