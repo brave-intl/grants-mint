@@ -141,6 +141,6 @@ settlements --steps creators \
   --publisher-ids 3cdd2edc-b613-48a9-b3bb-d6e087344687 f1e15b41-ab2d-4ba3-b7a4-88aadc59a2af
 ```
 
-### Manual settlements
+### Bitflyer settlements
 
 See [Bitflyer Settlements](<Bitflyer_Settlements.md>)
